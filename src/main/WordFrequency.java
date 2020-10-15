@@ -6,6 +6,8 @@ import java.nio.file.Path;
 import java.util.*;
 
 public class WordFrequency {
+
+
     public static void main(String[] args) {
         Scanner inputDevice = new Scanner(System.in);
 
@@ -20,62 +22,78 @@ public class WordFrequency {
         fileList = input.trim().split("\\s+");
         for (String filePath : fileList) {
             Path path = Path.of("src/textFiles/" + filePath);
-            doSomethingWithTheFile(path);
+            sortingOrchestrator(path);
         }
     }
 
-    private static void doSomethingWithTheFile(Path filePath) {
-        try{
-            HashMap<String, Integer> chunkOfThreeHash = new HashMap();
-            ArrayList<String> wordsList = new ArrayList<>();
-            BufferedReader reader = Files.newBufferedReader(filePath);
-            String line;
+    private static void sortingOrchestrator(Path filePath) {
+        ArrayList<String> wordsList = new ArrayList<>();
+        HashMap<String, Integer> chunkOfThreeHash = new HashMap();
 
-            //read the file into an array list
-            while ((line = reader.readLine()) != null){
+        // Get contents of a file into an array
+        wordsList = textFileToTextOnlyArrayList(filePath, wordsList);
+        // Use an array list to generate a hash map of the array batched into unique 3-word entries
+        chunkOfThreeHash = arrayToHashMapOfGroupedThreeWordBatches(wordsList, chunkOfThreeHash);
+        // Order the entries and limit to 100
+        chunkOfThreeHash = sortHashMapByValue(chunkOfThreeHash);
+        // print the top 100 entries
+        printHashMapDetail(chunkOfThreeHash, filePath);
+
+    }
+
+    private static void printHashMapDetail(HashMap<String, Integer> chunkOfThreeHash, Path filePath) {
+        System.out.println("*** Here are the top 100 3-word occurrences For the File at path " + filePath + " ***");
+        System.out.println(chunkOfThreeHash);
+    }
+
+    private static ArrayList<String> textFileToTextOnlyArrayList(Path filePath, ArrayList<String> wordsList) {
+        String line;
+
+        try {
+            BufferedReader reader = Files.newBufferedReader(filePath);
+            while ((line = reader.readLine()) != null) {
                 line = line.replaceAll("[^a-zA-Z0-9 ]", "");
                 String[] words = line.trim().split(" ");
-                for(String word: words){
-                    wordsList.add(word.toLowerCase());
+                for (String word : words) {
+                    if (word != " " | word != null) {
+                        wordsList.add(word.toLowerCase());
+                    }
                 }
             }
-
-            // pull the array list into a hash table grouped by three word pieces
-            System.out.println("Number of words provided: " + wordsList.size());
-            for (int i = 1; i < wordsList.size()-1; i++) {
-                String groupOfThreeWords = wordsList.get(i-1) + " " + wordsList.get(i) + " " + wordsList.get(i+1);
-                if(chunkOfThreeHash.containsKey(groupOfThreeWords)){
-                    int newCount = (int)chunkOfThreeHash.get(groupOfThreeWords) + 1;
-                    chunkOfThreeHash.put(groupOfThreeWords,  newCount) ;
-                }else{
-                    chunkOfThreeHash.put(groupOfThreeWords, 1);
-                }
-            }
-
-            chunkOfThreeHash = sortByValue(chunkOfThreeHash);
-            System.out.println(chunkOfThreeHash);
-
-        }catch(FileNotFoundException e){
-            System.out.println("file not found!!! " +e);
-        }catch (IOException e) {
-            System.out.println("I/O Issue!!! " +e);
+        } catch (FileNotFoundException e) {
+            System.out.println(e);
+        } catch (IOException e) {
+            System.out.println("The File you provided is not in the textFiles folder. Double Check that you spelled it correctly" + e);
         }
+        return wordsList;
     }
 
-    private static HashMap<String, Integer> sortByValue(HashMap<String, Integer> hm)
-    {
-        List<Map.Entry<String, Integer> > listDerivedFromHashMap = new LinkedList<Map.Entry<String, Integer> >(hm.entrySet());
+    private static HashMap<String, Integer> arrayToHashMapOfGroupedThreeWordBatches(ArrayList<String> wordsList, HashMap<String, Integer> chunkOfThreeHash) {
+        for (int i = 1; i < wordsList.size() - 1; i++) {
+            String groupOfThreeWords = wordsList.get(i - 1) + " " + wordsList.get(i) + " " + wordsList.get(i + 1);
+            if (chunkOfThreeHash.containsKey(groupOfThreeWords)) {
+                int newCount = (int) chunkOfThreeHash.get(groupOfThreeWords) + 1;
+                chunkOfThreeHash.put(groupOfThreeWords, newCount);
+            } else {
+                chunkOfThreeHash.put(groupOfThreeWords, 1);
+            }
+        }
+        return chunkOfThreeHash;
+    }
 
-        Collections.sort(listDerivedFromHashMap, new Comparator<Map.Entry<String, Integer> >() {
+
+    private static HashMap<String, Integer> sortHashMapByValue(HashMap<String, Integer> hm) {
+        List<Map.Entry<String, Integer>> listDerivedFromHashMap = new LinkedList<>(hm.entrySet());
+
+        Collections.sort(listDerivedFromHashMap, new Comparator<Map.Entry<String, Integer>>() {
             public int compare(Map.Entry<String, Integer> o1,
-                               Map.Entry<String, Integer> o2)
-            {
+                               Map.Entry<String, Integer> o2) {
                 return (o1.getValue()).compareTo(o2.getValue());
             }
         });
 
         HashMap<String, Integer> sortedHashMap = new LinkedHashMap<String, Integer>();
-        for (Map.Entry<String, Integer> listItem : listDerivedFromHashMap.subList(listDerivedFromHashMap.size()-100, listDerivedFromHashMap.size())) {
+        for (Map.Entry<String, Integer> listItem : listDerivedFromHashMap.subList(listDerivedFromHashMap.size() - 100, listDerivedFromHashMap.size())) {
             sortedHashMap.put(listItem.getKey(), listItem.getValue());
         }
         return sortedHashMap;
