@@ -36,12 +36,12 @@ public class WordFrequency {
                 line = line.replaceAll("[^a-zA-Z0-9 ]", "");
                 String[] words = line.trim().split(" ");
                 for(String word: words){
-                    wordsList.add(word);
+                    wordsList.add(word.toLowerCase());
                 }
             }
 
             // pull the array list into a hash table grouped by three word pieces
-            System.out.println("word list size: " + wordsList.size());
+            System.out.println("Number of words provided: " + wordsList.size());
             for (int i = 1; i < wordsList.size()-1; i++) {
                 String groupOfThreeWords = wordsList.get(i-1) + " " + wordsList.get(i) + " " + wordsList.get(i+1);
                 if(chunkOfThreeHash.containsKey(groupOfThreeWords)){
