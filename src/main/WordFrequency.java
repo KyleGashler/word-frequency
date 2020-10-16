@@ -7,46 +7,39 @@ import java.util.*;
 
 public class WordFrequency {
 
-
     public static void main(String[] args) {
+        ArrayList<String> wordsList = new ArrayList<>();
+        HashMap<String, Integer> chunkOfThreeHash = new HashMap();
         Scanner inputDevice = new Scanner(System.in);
-
-        System.out.println("Please provide one or more text files you would like analyzed separated by a space. \n" +
-                "The file should already exist in the textFiles folder. eg. theOriginOfSpecies.txt");
-        handleUserInput(inputDevice.nextLine());
-    }
-
-    private static void handleUserInput(String input) {
         String[] fileList;
 
-        fileList = input.trim().split("\\s+");
+        System.out.println("\n *** Please provide one or more text files you would like analyzed separated by a space. ***\n" +
+                "The file should already exist in the textFiles folder. eg. theOriginOfSpecies.txt");
+
+        fileList = handleUserInput(inputDevice.nextLine());
         for (String filePath : fileList) {
             Path path = Path.of("src/textFiles/" + filePath);
-            sortingOrchestrator(path);
+            // Get contents of a file into an array
+            wordsList = textFileToTextOnlyArrayList(path, wordsList);
+            // Use an array list to generate a hash map of the array batched into unique 3-word entries
+            chunkOfThreeHash = arrayToHashMapOfGroupedThreeWordBatches(wordsList, chunkOfThreeHash);
+            // Order the entries and limit to 100
+            chunkOfThreeHash = sortHashMapByValue(chunkOfThreeHash);
+            // print the top 100 entries
+            printHashMapDetail(chunkOfThreeHash, path);
         }
     }
 
-    private static void sortingOrchestrator(Path filePath) {
-        ArrayList<String> wordsList = new ArrayList<>();
-        HashMap<String, Integer> chunkOfThreeHash = new HashMap();
-
-        // Get contents of a file into an array
-        wordsList = textFileToTextOnlyArrayList(filePath, wordsList);
-        // Use an array list to generate a hash map of the array batched into unique 3-word entries
-        chunkOfThreeHash = arrayToHashMapOfGroupedThreeWordBatches(wordsList, chunkOfThreeHash);
-        // Order the entries and limit to 100
-        chunkOfThreeHash = sortHashMapByValue(chunkOfThreeHash);
-        // print the top 100 entries
-        printHashMapDetail(chunkOfThreeHash, filePath);
-
+    public static String[] handleUserInput(String input) {
+        return input.trim().split("\\s+");
     }
 
-    private static void printHashMapDetail(HashMap<String, Integer> chunkOfThreeHash, Path filePath) {
+    public static void printHashMapDetail(HashMap<String, Integer> chunkOfThreeHash, Path filePath) {
         System.out.println("*** Here are the top 100 3-word occurrences For the File at path " + filePath + " ***");
         System.out.println(chunkOfThreeHash);
     }
 
-    private static ArrayList<String> textFileToTextOnlyArrayList(Path filePath, ArrayList<String> wordsList) {
+    public static ArrayList<String> textFileToTextOnlyArrayList(Path filePath, ArrayList<String> wordsList) {
         String line;
 
         try {
@@ -68,7 +61,7 @@ public class WordFrequency {
         return wordsList;
     }
 
-    private static HashMap<String, Integer> arrayToHashMapOfGroupedThreeWordBatches(ArrayList<String> wordsList, HashMap<String, Integer> chunkOfThreeHash) {
+    public static HashMap<String, Integer> arrayToHashMapOfGroupedThreeWordBatches(ArrayList<String> wordsList, HashMap<String, Integer> chunkOfThreeHash) {
         for (int i = 1; i < wordsList.size() - 1; i++) {
             String groupOfThreeWords = wordsList.get(i - 1) + " " + wordsList.get(i) + " " + wordsList.get(i + 1);
             if (chunkOfThreeHash.containsKey(groupOfThreeWords)) {
@@ -81,8 +74,7 @@ public class WordFrequency {
         return chunkOfThreeHash;
     }
 
-
-    private static HashMap<String, Integer> sortHashMapByValue(HashMap<String, Integer> hm) {
+    public static HashMap<String, Integer> sortHashMapByValue(HashMap<String, Integer> hm) {
         List<Map.Entry<String, Integer>> listDerivedFromHashMap = new LinkedList<>(hm.entrySet());
 
         Collections.sort(listDerivedFromHashMap, new Comparator<Map.Entry<String, Integer>>() {

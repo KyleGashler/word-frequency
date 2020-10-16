@@ -1,9 +1,25 @@
-// import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 
 class WordFrequencyTest {
 
-    public static void main(String[] args) {
+    @Test
+    void handleUserInput() {
+    }
+
+    @Test
+    void printHashMapDetail() {
 
     }
 
+    @Test
+    void textFileToTextOnlyArrayList() {
+    }
+
+    @Test
+    void arrayToHashMapOfGroupedThreeWordBatches() {
+    }
+
+    @Test
+    void sortHashMapByValue() {
+    }
 }
